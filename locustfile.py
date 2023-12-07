@@ -1,5 +1,15 @@
 from locust import HttpUser, task, between
 import logging
+import random
+import csv
+
+
+def read_credentials_from_csv(file_path):
+    with open(file_path, 'r') as file:
+        reader = csv.DictReader(file)
+        return list(reader)
+
+credentials_list = read_credentials_from_csv('credentials.csv')
 
 class UserBehavior(HttpUser):
     """
@@ -18,10 +28,7 @@ class UserBehavior(HttpUser):
         login_url = "/authenticate"
 
         # Define the login credentials
-        credentials = {
-            "username": "tomsmith",  # Replace with a valid username
-            "password": "SuperSecretPassword!"   # Replace with a valid password
-        }
+        credentials = random.choice(credentials_list)
 
         # Send a POST request to the login form
         with self.client.post(login_url, data=credentials, catch_response=True) as response:
