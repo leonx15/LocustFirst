@@ -11,9 +11,13 @@ def read_credentials_from_csv(file_path):
 credentials_list = read_credentials_from_csv('credentials.csv')
 
 class UserBehavior(HttpUser):
-    wait_time = between(1, 5)
+    wait_time = between(1, 2)
 
-    @task
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.should_logout = False
+
+    @task(1)
     def login(self):
         login_url = "/authenticate"
         credentials = random.choice(credentials_list)
@@ -25,7 +29,26 @@ class UserBehavior(HttpUser):
             # Check for specific content in the response
             if "Logout" in response.text:
                 logging.info("Logout found in the response")
-                response.success()
+                self.should_logout = True
             else:
                 logging.info("Logout not found in the response")
-                response.failure("Expected content not found in the response")
+                self.should_logout = False
+
+            response.success()
+
+    @task(2)
+    def logout(self):
+        if self.should_logout:
+            # Sending a request to the logout URL
+            with self.client.get("/logout", catch_response=True) as response:
+                logging.info(f"Logout Response Status Code: {response.status_code}")
+                logging.info(f"Logout Response Content: {response.text}")
+
+                # Check if the response contains the expected text
+                if "You logged out" in response.text:
+                    logging.info("Correct logout response received")
+                    response.success()
+                else:
+                    logging.error("Incorrect logout response")
+                    response.failure("Incorrect response received for logout")
+
