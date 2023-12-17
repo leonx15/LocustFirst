@@ -6,4 +6,6 @@
 
 > [!NOTE]
 >- to run locust test please use "locust" in terminal while standing in project directory.
+>- To define specific test from our test library use standing in main directory of our project:
+>  - locust -f ./tests/one/locusttest.py
 >- remember to change in browser address for locust test from 0.0.0.0 to localhost.

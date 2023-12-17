@@ -8,7 +8,7 @@ def read_credentials_from_csv(file_path):
         reader = csv.DictReader(file)
         return list(reader)
 
-credentials_list = read_credentials_from_csv('credentials.csv')
+credentials_list = read_credentials_from_csv('./tests/one/credentials.csv')
 
 class UserBehavior(HttpUser):
     host = "https://the-internet.herokuapp.com"
@@ -18,6 +18,10 @@ class UserBehavior(HttpUser):
         super().__init__(*args, **kwargs)
         self.should_logout = False
 
+    def on_start(self):
+        # In this place we set a path to our certificate to allow https requests.
+        # if not needed please comment line below.
+        self.client.verify = 'cert/certific.pem'
 
     @task(1)
     def login(self):
