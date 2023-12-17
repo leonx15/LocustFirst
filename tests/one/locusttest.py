@@ -21,7 +21,7 @@ class UserBehavior(HttpUser):
     def on_start(self):
         # In this place we set a path to our certificate to allow https requests.
         # if not needed please comment line below.
-        self.client.verify = 'cert/certific.pem'
+        self.client.verify = './cert/certific.pem'
 
     @task(1)
     def login(self):
