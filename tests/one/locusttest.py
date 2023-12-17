@@ -3,6 +3,7 @@ import logging
 import random
 import csv
 
+
 def read_credentials_from_csv(file_path):
     with open(file_path, 'r') as file:
         reader = csv.DictReader(file)
@@ -24,19 +25,40 @@ class UserBehavior(HttpUser):
         # In this place we set a path to our certificate to allow https requests.
         # if not needed please comment line below.
         self.client.verify = './cert/certific.pem'
+        self.login()
 
-        #Perform Login action for each user.
+    def login(self):
+        # Perform Login action for each user.
         login_url = "/authenticate"
         credentials = random.choice(credentials_list)
         with self.client.post(login_url, data=credentials, catch_response=True) as response:
-            if response.status_code == 200 and "Logout" in response.text:
+            if "Logout" in response.text:
                 self.should_logout = True
             else:
                 self.should_logout = False
             logging.info(f"Status Code: {response.status_code}")
             logging.info(f"Response Content: {response.text}")
 
+    # Tasks listed below will be executed by users choosing one of them on each iteration.
     @task
+    def one(self):
+        logging.info("One")
+
+    @task
+    def two(self):
+        logging.info("two")
+
+    @task
+    def three(self):
+        logging.info("three")
+
+    @task
+    def four(self):
+        logging.info("four")
+
+    def on_stop(self):
+        self.logout()
+
     def logout(self):
         if self.should_logout:
             with self.client.get("/logout", catch_response=True) as response:
