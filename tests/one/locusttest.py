@@ -8,7 +8,9 @@ def read_credentials_from_csv(file_path):
         reader = csv.DictReader(file)
         return list(reader)
 
+
 credentials_list = read_credentials_from_csv('./tests/one/credentials.csv')
+
 
 class UserBehavior(HttpUser):
     host = "https://the-internet.herokuapp.com"
@@ -23,38 +25,26 @@ class UserBehavior(HttpUser):
         # if not needed please comment line below.
         self.client.verify = './cert/certific.pem'
 
-    @task(1)
-    def login(self):
+        #Perform Login action for each user.
         login_url = "/authenticate"
         credentials = random.choice(credentials_list)
-
         with self.client.post(login_url, data=credentials, catch_response=True) as response:
+            if response.status_code == 200 and "Logout" in response.text:
+                self.should_logout = True
+            else:
+                self.should_logout = False
             logging.info(f"Status Code: {response.status_code}")
             logging.info(f"Response Content: {response.text}")
 
-            # Check for specific content in the response
-            if "Logout" in response.text:
-                logging.info("Logout found in the response")
-                self.should_logout = True
-            else:
-                logging.info("Logout not found in the response")
-                self.should_logout = False
-
-            response.success()
-
-    @task(2)
+    @task
     def logout(self):
         if self.should_logout:
-            # Sending a request to the logout URL
             with self.client.get("/logout", catch_response=True) as response:
                 logging.info(f"Logout Response Status Code: {response.status_code}")
                 logging.info(f"Logout Response Content: {response.text}")
-
-                # Check if the response contains the expected text
                 if "You logged out" in response.text:
                     logging.info("Correct logout response received")
                     response.success()
                 else:
                     logging.error("Incorrect logout response")
                     response.failure("Incorrect response received for logout")
-
