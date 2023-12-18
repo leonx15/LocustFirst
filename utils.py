@@ -9,7 +9,7 @@ def read_credentials_from_csv(file_path):
         return list(reader)
 
 
-credentials_list = read_credentials_from_csv('./tests/one/credentials.csv')
+credentials_list = read_credentials_from_csv('./tests/one/credentials_only2.csv')
 
 
 def login(self):
